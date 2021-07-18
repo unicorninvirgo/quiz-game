@@ -1,13 +1,12 @@
 var messageEl = document.getElementById("message");
 var timerEl  = document.getElementById("timer");
-var choicesEl = document.getElementById("choices").children[0];
 var buttonStartEl = document.getElementById("btn-start");
 var buttonStopEl = document.getElementById("btn-stop");
 var choiceListEl = document.querySelector("ul");
 var captureScoreEl = document.getElementById("capture-score");
 var scoreToggleEl = document.getElementById("score-message-toggle");
 var counterDisplayEl = document.getElementById("counter-display")
-var displayScoreEl = document.getElementById("scores");
+var displayScoreEl = document.getElementById("display-score");
 var userInitialForm = document.querySelector("form");
 var userClearScoreEl = document.getElementById("counter-display");
 var tableScoreEl = document.getElementById("table-scores");
@@ -39,15 +38,14 @@ if(savedScores == null)
 //display the quiz context
 function displayQuiz(){
 
-    while(counter > 0)
-    {
+ 
         var ind = 0;
-        displayQuestionAndChoices(ind);
-    }
+        displayQuestionAndChoices(ind,calculateResults(ind));
+
 
 };
 
-function displayQuestionAndChoices(ind){
+function displayQuestionAndChoices(ind,callback){
 
     var arrChoices = questions[ind].choices;
 
@@ -59,30 +57,46 @@ function displayQuestionAndChoices(ind){
         choiceListEl.appendChild(choiceList);
     }
 
+    //console.log(questions[ind].answer);
+    callback(questions[ind].answer);
+
+};
+
+function calculateResults(answer){
+
+    console.log(answer);
+    choiceListEl.addEventListener("click",function(event){
+        console.log(event.target);
+    });
+
 }
 
+
+//start the game
 function startGame(){
+
+    //start the timer
    startTimer();
-   displayQuiz();
+
+   //displayQuiz options
+  displayQuiz();
 }
 
 function startTimer(){
 
      timerInterval = setInterval(function(){
 
-        secondsLeft--;
+     secondsLeft--;
 
         if(secondsLeft >= 0)
         {
-            //displayQuiz();
-            counterDisplayEl.textContent = secondsLeft;
+            counterDisplayEl.innerHTML = secondsLeft;
         }
         else if(secondsLeft === 0)
         {
             clearInterval(timerInterval);
+            return;
         }
-
-
     },2000);
 
 }
@@ -90,8 +104,16 @@ function startTimer(){
 function displayScores(){
 
     for(i = 0; i < savedScores.length; i++)
+    {
+        var histTableRow = document.createElement('tr');
+        var histTableData1 = document.createElement('td');
+        var histTableData2 = document.createElement('td');
 
-    displayScoreEl.innerHTML = savedScores[0].userInitial;
+        histTableData1.innerHTML = savedScores[i].userInitial;
+        histTableData2.innerHTML = savedScores[i].userScore;
+        tableScoreEl.appendChild(histTableRow);
+        tableScoreEl.appendChild(histTableData1).appendChild(histTableData2);
+    }
 
 };
 
@@ -112,8 +134,12 @@ function saveScore(event){
 
 userInitialForm.addEventListener("submit",saveScore);
 
-function clearScore(){
+function clearScore(event){
+    //prevent default action
+    event.preventDefault();
 
+    localStorage.clear();
+    return;
 }
 
 function calculateResults(){
@@ -133,11 +159,7 @@ buttonStopEl.addEventListener("click",function(){
 });
 
 //listen for event to stop game
-userClearScoreEl.addEventListener("click",function(){
-    localStorage.clear();
-    return;
-});
-
+userClearScoreEl.addEventListener("click",clearScore);
 
 //listen for event to display score
 scoreToggleEl.addEventListener("click",function(event){
