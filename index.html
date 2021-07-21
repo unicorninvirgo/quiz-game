@@ -24,15 +24,14 @@
                 <div id="message"></div>
                 <div id="choices"><ul id="choice-list"></ul></div>
             </section>
-            <section id="timer"></section>
-            <section>
+            <section id="answer"></section>
+            <section id="">
                 <button id="btn-start">START QUIZ</button>
-                <button id="btn-stop">PAUSE QUIZ</button>
             </section>
             <section id="capture-score">
                 <form>
-                    <label for="user-initials">Enter Your Initials:</label>
-                    <input type="text" name="user-initials" id="user-initials" placeholder="Enter your initials here">
+                    <label for="user-initials">Enter Your Initials To Save Your Score:</label>
+                    <input type="text" name="user-initials" id="user-initials">
                 </form>
             </section>
             <section id="display-score">
@@ -40,12 +39,10 @@
                     <table class="table">
                         <thead>
                           <tr>
-                            <th scope="col">User</th>
-                            <th scope="col">Score</th>
+                            <th scope="col">User and Score</th>
                           </tr>
                         </thead>
                         <tbody id="table-scores">
-
                         </tbody>
                     </table>
                 </div>
@@ -54,5 +51,6 @@
         <footer id="footer"></footer> 
     
   <script type="text/javascript" src="./assets/js/script.js"></script>
+  <script type="text/javascript" src="./assets/js/data.js"></script>
 </body>
 </html>

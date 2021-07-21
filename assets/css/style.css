@@ -24,8 +24,17 @@ input#username {
 }
 
 .container{
-    width: 600px;
+    width: 500px;
     margin: 0 auto;
     margin-top:100px;
     text-align: center;
+}
+
+#choice-list{
+    list-style: circle;
+    text-align: left;
+}
+
+#choicelist li:focus, li:hover{
+    background-color: rgb(146, 163, 194) !important;
 }

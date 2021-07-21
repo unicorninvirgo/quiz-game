@@ -1,7 +1,6 @@
 var messageEl = document.getElementById("message");
-var timerEl  = document.getElementById("timer");
+var answerEl  = document.getElementById("answer");
 var buttonStartEl = document.getElementById("btn-start");
-var buttonStopEl = document.getElementById("btn-stop");
 var choiceListEl = document.querySelector("ul");
 var captureScoreEl = document.getElementById("capture-score");
 var scoreToggleEl = document.getElementById("score-message-toggle");
@@ -10,21 +9,42 @@ var displayScoreEl = document.getElementById("display-score");
 var userInitialForm = document.querySelector("form");
 var userClearScoreEl = document.getElementById("counter-display");
 var tableScoreEl = document.getElementById("table-scores");
-
+var choicesSecEl = document.getElementById("choices");
+var clearScoreEl = document.getElementById("clear-score");
 
 //hide results
 captureScoreEl.style.display = "none";
 displayScoreEl.style.display = "none";
 
 var questions = [
-    {question:"What is Javascript?",choices:["database","car","fruit","language"],answer:1},
-    {question:"What is a parameter?",choices:["database","car","fruit","language"],answer:1}
+    {
+        question:"What is Javascript?",
+        choices:["database","language","fruit","language"],
+        answer:'database'
+    },
+    {
+        question:"How are values assigned to variables in Javascript?",
+        choices:["+","-","=",">"],
+        answer:"="
+    },
+    {
+        question:"True of False: Arrays and objects can hold other arrays and objects",
+        choices:["true","false"],
+        answer:"true"
+    },
+    {
+        question:"A data value that appears directly in a program",
+        choices:["array","function","literal","number"],
+        answer:"literal"
+    }
 ];
 
+
 var timerInterval;
-var counter = 2; //questions.length;
+var counter = questions.length;
 var secondsLeft = 20;
 var userInitials;
+var index = 0;
 
 //save scores from history
 let savedScores = JSON.parse(localStorage.getItem("scoreHistory"));
@@ -35,131 +55,167 @@ if(savedScores == null)
 }
 
 
-//display the quiz context
-function displayQuiz(){
+//start the game
+function startGame(){
 
- 
-        var ind = 0;
-        displayQuestionAndChoices(ind,calculateResults(ind));
+    //hide button start
+    buttonStartEl.style.display = "none";
 
+    //start the timer
+    startTimer();
 
+    //displayQuiz options
+    displayQuestionAndChoices();
 };
 
-function displayQuestionAndChoices(ind,callback){
+//function to display questions and choices
+function displayQuestionAndChoices(){
 
-    var arrChoices = questions[ind].choices;
+   //clear choice list
+   clearChoices();
+   
+    var arrChoices = questions[index].choices;
 
-    messageEl.textContent = questions[ind].question;
+    //display question
+    messageEl.textContent = questions[index].question;
     for(i=0; i < arrChoices.length; i++)
     {
         var choiceList = document.createElement('li');
         choiceList.innerHTML = arrChoices[i];
         choiceListEl.appendChild(choiceList);
     }
-
-    //console.log(questions[ind].answer);
-    callback(questions[ind].answer);
-
+    
+    answerEl.innerHTML = "";
 };
 
-function calculateResults(answer){
+//clear choices presented to screen
+function clearChoices(){
+    var children = choiceListEl.children;
+    
+    if(choiceListEl.hasChildNodes())
+    {for(i = children.length - 1; i >= 0; i--)
+        {
+            choiceListEl.removeChild(choiceListEl.lastElementChild);
+        }
+    }
+};
 
-    console.log(answer);
-    choiceListEl.addEventListener("click",function(event){
-        console.log(event.target);
-    });
+function checkAnswer(answer){
 
+    //validate user choice
+    if(answer == questions[index].answer)
+    {
+        answerEl.innerHTML = "CORRECT";
+    }
+    else{
+
+        answerEl.innerHTML = "WRONG CHOICE"
+        secondsLeft = secondsLeft - 5;
+    }
+
+    //increment counter
+    index++;
+    
+    //go to next questions
+    if(index < counter && secondsLeft > 0)
+    {
+        //slight lag before moving to next questions
+        setTimeout(displayQuestionAndChoices,1000,index);
+    }
+    else{
+        saveScore();
+        endGame();
+        //return;
+    }
+};
+
+function endGame(){
+
+    clearInterval(timerInterval);
+    messageEl.innerHTML = "GAME OVER";
+    choicesSecEl.innerHTML = `Your final score is ${20 - secondsLeft}`;
+    captureScoreEl.style.display = "inline";
+    answerEl.style.display = "none";
 }
 
 
-//start the game
-function startGame(){
-
-    //start the timer
-   startTimer();
-
-   //displayQuiz options
-  displayQuiz();
-}
-
+//start countedoown on timer
 function startTimer(){
 
-     timerInterval = setInterval(function(){
+        timerInterval = setInterval(function(){
 
-     secondsLeft--;
+        secondsLeft--;
 
-        if(secondsLeft >= 0)
+        if((secondsLeft >= 0) && (index != counter))
         {
             counterDisplayEl.innerHTML = secondsLeft;
         }
-        else if(secondsLeft === 0)
+        else
         {
-            clearInterval(timerInterval);
-            return;
+            endGame();
+            //return;
         }
     },2000);
 
-}
+};
 
+//display scores
 function displayScores(){
 
     for(i = 0; i < savedScores.length; i++)
     {
         var histTableRow = document.createElement('tr');
-        var histTableData1 = document.createElement('td');
-        var histTableData2 = document.createElement('td');
+        var histTableData = document.createElement('td');
 
-        histTableData1.innerHTML = savedScores[i].userInitial;
-        histTableData2.innerHTML = savedScores[i].userScore;
+        histTableData.innerHTML = savedScores[i].userInitial + " - " + savedScores[i].userScore;
         tableScoreEl.appendChild(histTableRow);
-        tableScoreEl.appendChild(histTableData1).appendChild(histTableData2);
+        tableScoreEl.appendChild(histTableData);
     }
 
 };
 
 
-//save score when prompted
-function saveScore(event){
-    
-    event.preventDefault();
+//save score to location storage
+function saveScore(){
 
     var userScore = {
         userInitial: document.querySelector("#user-initials").value.trim(),
-        userScore: secondsLeft
+        userScore: (secondsLeft + 1)
     };
     
     savedScores.push(userScore);
     localStorage.setItem("scoreHistory",JSON.stringify(savedScores));
+    captureScoreEl.style.display = "none";
+  
 }
 
-userInitialForm.addEventListener("submit",saveScore);
 
 function clearScore(event){
     //prevent default action
     event.preventDefault();
 
+    //clear out local storage
     localStorage.clear();
     return;
+};
+
+function createEventListeners(){
+    //listen for event to start game
+    buttonStartEl.addEventListener("click",startGame);
+
+    //capture events of user selection
+    choicesSecEl.addEventListener("click",function(event){
+        var answer = event.target.textContent;
+        //userSelect.userCurrentAnswer = answer;
+        checkAnswer(answer);
+    });
+
+    userInitialForm.addEventListener("submit",saveScore);
+
+    clearScoreEl.addEventListener("click",clearScore);
+
 }
 
-function calculateResults(){
-
-}
-
-
-//listen for event to start game
-buttonStartEl.addEventListener("click",function(){
-    startGame();
-});
-
-//listen for event to stop game
-buttonStopEl.addEventListener("click",function(){
-    clearInterval(timerInterval);
-    return;
-});
-
-//listen for event to stop game
-userClearScoreEl.addEventListener("click",clearScore);
 
 //listen for event to display score
 scoreToggleEl.addEventListener("click",function(event){
@@ -183,6 +239,9 @@ scoreToggleEl.addEventListener("click",function(event){
 
 //function to initiate game
 function init(){
+
+    createEventListeners();
+
     //display text
     messageEl.setAttribute("style","font-size:28px;");
     messageEl.textContent = "Are you ready to test your Javascript knowledge?  Click the button to get started.";
